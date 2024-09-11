@@ -8,6 +8,6 @@ export default defineConfig({
   },
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }]
+    ['html', { outputPath: 'playwright-report' }],
   ],
 });
