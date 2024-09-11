@@ -45,14 +45,38 @@ pipeline {
             }
         }
 
+        stage('Install Playwright') {
+            steps {
+                echo 'Installing Playwright...'
+                script {
+                    try {
+                        sh 'npx playwright install'  // Instala las dependencias de Playwright necesarias
+                    } catch (Exception e) {
+                        error "Failed to install Playwright: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+
+        stage('Run Playwright Tests') {
+            steps {
+                echo 'Running Playwright tests...'
+                script {
+                    try {
+                        sh 'npx playwright test'  // Ejecuta las pruebas con Playwright
+                    } catch (Exception e) {
+                        error "Playwright tests failed: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+
         stage('Post-Install Cleanup') {
             steps {
                 echo 'Cleaning up temporary files...'
                 sh 'npm cache clean --force'  // Limpieza de caché npm
             }
         }
-
-     
     }
 
     post {
@@ -61,10 +85,10 @@ pipeline {
             cleanWs()  // Limpia el workspace después del pipeline
         }
         success {
-            echo 'Build completed successfully!'
+            echo 'Build and tests completed successfully!'
         }
         failure {
-            echo 'Build failed. Please check the logs.'
+            echo 'Build or tests failed. Please check the logs.'
         }
     }
 }
