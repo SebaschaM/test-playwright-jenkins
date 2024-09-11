@@ -96,7 +96,7 @@ pipeline {
                 reportFiles: 'index.html',
                 keepAll: true,
                 alwaysLinkToLastBuild: true,
-                allowMissing: true  // Permitir que continúe si no encuentra el reporte
+                allowMissing: false  // Permitir que continúe si no encuentra el reporte
             ])
 
             // Notificación de éxito en Telegram
