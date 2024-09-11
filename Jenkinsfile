@@ -9,8 +9,6 @@ pipeline {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
         BRANCH = 'main'
         CREDENTIALS_ID = 'credentials'  // Asegúrate de que este ID corresponda a tus credenciales almacenadas
-        TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')  // Referencia a las credenciales
-        TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')  // Referencia a las credenciales
     }
 
     stages {
@@ -97,26 +95,28 @@ pipeline {
 
             echo 'Entrando a la carpeta playwright-report...'
 
-            // Notificación de éxito en Telegram
-            script {
-                sh """
-                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
-                -d chat_id=${TELEGRAM_CHAT_ID} \\
-                -d text="🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente."
-                """
-            }
-
-            // Enviar el archivo index.html del reporte a Telegram, verificando que el archivo exista
-            script {
-                def reportFile = 'playwright-report/index.html'
-                if (fileExists(reportFile)) {
-                    // Correcto uso de `curl` para enviar el archivo
+            // Notificación de éxito en Telegram usando withCredentials
+            withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TELEGRAM_TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'TELEGRAM_CHAT_ID')]) {
+                script {
                     sh """
-                    curl -F chat_id=${TELEGRAM_CHAT_ID} -F document=@${reportFile} \\
-                    "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument" -F "caption=Playwright Test Report"
+                    curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
+                    -d chat_id=${TELEGRAM_CHAT_ID} \\
+                    -d text="🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente."
                     """
-                } else {
-                    echo "El archivo ${reportFile} no existe, no se enviará el reporte a Telegram."
+                }
+
+                // Enviar el archivo index.html del reporte a Telegram, verificando que el archivo exista
+                script {
+                    def reportFile = 'playwright-report/index.html'
+                    if (fileExists(reportFile)) {
+                        // Correcto uso de `curl` para enviar el archivo
+                        sh """
+                        curl -F chat_id=${TELEGRAM_CHAT_ID} -F document=@${reportFile} \\
+                        "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument" -F "caption=Playwright Test Report"
+                        """
+                    } else {
+                        echo "El archivo ${reportFile} no existe, no se enviará el reporte a Telegram."
+                    }
                 }
             }
         }
@@ -124,13 +124,15 @@ pipeline {
         failure {
             echo 'Build or tests failed. Please check the logs.'
 
-            // Notificación de fallo en Telegram
-            script {
-                sh """
-                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
-                -d chat_id=${TELEGRAM_CHAT_ID} \\
-                -d text="🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles."
-                """
+            // Notificación de fallo en Telegram usando withCredentials
+            withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TELEGRAM_TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'TELEGRAM_CHAT_ID')]) {
+                script {
+                    sh """
+                    curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
+                    -d chat_id=${TELEGRAM_CHAT_ID} \\
+                    -d text="🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles."
+                    """
+                }
             }
         }
     }
