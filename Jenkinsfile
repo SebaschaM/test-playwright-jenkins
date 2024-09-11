@@ -106,6 +106,15 @@ pipeline {
                 -d text="🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente."
                 """
             }
+
+            // Enviar el archivo index.html del reporte a Telegram
+            script {
+                def reportFile = "playwright-report/index.html"
+                sh """
+                curl -F document=@${reportFile} \\
+                "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument?chat_id=${TELEGRAM_CHAT_ID}&caption=Playwright Test Report"
+                """
+            }
         }
 
         failure {
