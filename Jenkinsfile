@@ -10,7 +10,7 @@ pipeline {
         BRANCH = 'main'
         CREDENTIALS_ID = 'credentials'  // Asegúrate de que este ID corresponda a tus credenciales almacenadas
         TELEGRAM_TOKEN = '7041697925:AAE1_pGd_y8WVShJrJpB6jf8XL58qNsTLI4'  // Token del bot de Telegram
-        TELEGRAM_CHAT_ID = '5504584007'  // Chat ID donde se enviarán las notificaciones
+        TELEGRAM_CHAT_ID = '-1002184026427'  // Chat ID donde se enviarán las notificaciones
     }
 
     stages {
