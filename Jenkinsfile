@@ -1,36 +1,70 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/playwright:v1.44.1-jammy'
-        }
+    agent any
+
+    tools { 
+        nodejs "nodeversion21"  // Asegúrate que 'nodeversion21' esté configurado en Jenkins
     }
+
+    environment {
+        REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
+        BRANCH = 'main'
+        CREDENTIALS_ID = 'credentials'  // Asegúrate que este ID corresponda a tus credenciales almacenadas
+    }
+
     stages {
-        stage('e2e-tests') {
+        stage('Prepare') {
             steps {
-                sh 'npm ci'
-                sh 'npx playwright test'
+                echo 'Preparing environment...'
+                cleanWs()  // Limpia el workspace antes de iniciar
             }
         }
-    }
-    post {
-        always {
-            script {
-                sh 'curl -X POST -H "Content-Type: application/json" -d \'{"chat_id": "-4254450938", "text": "Ejecución de pruebas e2e finalizada"}\' "https://api.telegram.org/bot7469614639:AAEGvFH8Pi5Q7v_vM_jnctAIl9GO_n6nFyg/sendMessage"'
-            }
-            script {
-                def result = currentBuild.result
-                if (result != 'SUCCESS') {
-                    sh 'curl -X POST -H "Content-Type: application/json" -d \'{"chat_id": "-4254450938", "text": "Error en la ejecución de pruebas e2e"}\' "https://api.telegram.org/bot7469614639:AAEGvFH8Pi5Q7v_vM_jnctAIl9GO_n6nFyg/sendMessage"'
+
+        stage('Git Clone') {
+            steps {
+                echo 'Cloning the repository...'
+                script {
+                    try {
+                        git branch: "${BRANCH}", credentialsId: "${CREDENTIALS_ID}", url: "${REPO_URL}"
+                    } catch (Exception e) {
+                        error "Failed to clone repository: ${e.getMessage()}"
+                    }
                 }
             }
-            publishHTML([
-                reportName: 'Playwright Report',
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: false
-            ])
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing npm dependencies...'
+                script {
+                    try {
+                        sh 'npm install --silent'  // `--silent` para reducir el ruido en los logs
+                    } catch (Exception e) {
+                        error "Failed to install npm dependencies: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+
+        stage('Post-Install Cleanup') {
+            steps {
+                echo 'Cleaning up temporary files...'
+                sh 'npm cache clean --force'  // Limpieza de caché npm
+            }
+        }
+
+     
+    }
+
+    post {
+        always {
+            echo 'Cleaning up workspace...'
+            cleanWs()  // Limpia el workspace después del pipeline
+        }
+        success {
+            echo 'Build completed successfully!'
+        }
+        failure {
+            echo 'Build failed. Please check the logs.'
         }
     }
 }
