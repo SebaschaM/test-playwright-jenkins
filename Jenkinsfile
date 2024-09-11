@@ -1,8 +1,8 @@
 pipeline {
     agent any
 
-    tools { 
-        nodejs "nodeversion21"  // Asegúrate que 'nodeversion21' esté configurado en Jenkins
+    tools {
+        nodejs 'nodeversion21'  // Asegúrate que 'nodeversion21' esté configurado en Jenkins
     }
 
     environment {
@@ -37,8 +37,7 @@ pipeline {
                 echo 'Installing system dependencies...'
                 script {
                     try {
-                        sh 'sudo su'  // Instala las dependencias necesarias
-                        sh 'sudo npx playwright install-deps' 
+                        sh 'npx playwright install-deps'  // Ejecuta sin sudo
                     } catch (Exception e) {
                         error "Failed to install system dependencies: ${e.getMessage()}"
                     }
@@ -88,7 +87,7 @@ pipeline {
         stage('Post-Install Cleanup') {
             steps {
                 echo 'Cleaning up temporary files...'
-                sh 'sudo npm cache clean --force'  // Limpieza de caché npm con sudo
+                sh 'npm cache clean --force'  // Limpieza de caché npm sin sudo
             }
         }
     }
