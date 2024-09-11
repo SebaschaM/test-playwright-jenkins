@@ -112,8 +112,8 @@ pipeline {
                 def reportFile = "playwright-report/index.html"
                 if (fileExists(reportFile)) {
                     sh """
-                    curl -F document=@${reportFile} \\
-                    "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument?chat_id=${TELEGRAM_CHAT_ID}&caption=Playwright Test Report"
+                    curl -F "chat_id=${TELEGRAM_CHAT_ID}" -F "document=@${reportFile}" \\
+                    "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument?caption=Playwright Test Report"
                     """
                 } else {
                     echo "El archivo ${reportFile} no existe, no se enviará el reporte a Telegram."
