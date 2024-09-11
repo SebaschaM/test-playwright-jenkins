@@ -107,13 +107,17 @@ pipeline {
                 """
             }
 
-            // Enviar el archivo index.html del reporte a Telegram
+            // Enviar el archivo index.html del reporte a Telegram, verificando que el archivo exista
             script {
                 def reportFile = "playwright-report/index.html"
-                sh """
-                curl -F document=@${reportFile} \\
-                "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument?chat_id=${TELEGRAM_CHAT_ID}&caption=Playwright Test Report"
-                """
+                if (fileExists(reportFile)) {
+                    sh """
+                    curl -F document=@${reportFile} \\
+                    "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument?chat_id=${TELEGRAM_CHAT_ID}&caption=Playwright Test Report"
+                    """
+                } else {
+                    echo "El archivo ${reportFile} no existe, no se enviará el reporte a Telegram."
+                }
             }
         }
 
