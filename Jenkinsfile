@@ -37,8 +37,8 @@ pipeline {
                 echo 'Installing system dependencies...'
                 script {
                     try {
-                        // Instala las dependencias del sistema para Playwright
-                        sh 'npx playwright install-deps' 
+                        sh 'sudo su'  // Instala las dependencias necesarias
+                        sh 'sudo npx playwright install-deps' 
                     } catch (Exception e) {
                         error "Failed to install system dependencies: ${e.getMessage()}"
                     }
@@ -88,7 +88,7 @@ pipeline {
         stage('Post-Install Cleanup') {
             steps {
                 echo 'Cleaning up temporary files...'
-                sh 'npm cache clean --force'  // Limpieza de caché npm
+                sh 'sudo npm cache clean --force'  // Limpieza de caché npm con sudo
             }
         }
     }
