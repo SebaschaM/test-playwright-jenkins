@@ -35,6 +35,19 @@ pipeline {
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing npm dependencies...'
+                script {
+                    try {
+                        sh 'npm install'  // Instala las dependencias de npm
+                    } catch (Exception e) {
+                        error "Failed to install npm dependencies: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+
         stage('Install Playwright') {
             when {
                 expression { env.BRANCH == 'main' }  // Solo instala si está en la rama 'main'
