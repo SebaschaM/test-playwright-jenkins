@@ -90,22 +90,22 @@ pipeline {
         success {
             echo 'Build and tests completed successfully!'
 
-             publishHTML([
-                reportName: 'Playwright Report',
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: false
-            ])
+            publishHTML([
+            reportName: 'Playwright Report',
+            reportDir: 'playwright-report',
+            reportFiles: 'index.html',
+            keepAll: true,
+            alwaysLinkToLastBuild: true,
+            allowMissing: true  // Cambiado a true para permitir que continúe si no encuentra el reporte
+        ])
 
             // Notificación de éxito en Telegram
             script {
                 sh """
-                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
-                -d chat_id=${TELEGRAM_CHAT_ID} \\
-                -d text="🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente."
-                """
+            curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
+            -d chat_id=${TELEGRAM_CHAT_ID} \\
+            -d text="🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente."
+            """
             }
         }
 
@@ -115,10 +115,10 @@ pipeline {
             // Notificación de fallo en Telegram
             script {
                 sh """
-                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
-                -d chat_id=${TELEGRAM_CHAT_ID} \\
-                -d text="🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles."
-                """
+            curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
+            -d chat_id=${TELEGRAM_CHAT_ID} \\
+            -d text="🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles."
+            """
             }
         }
     }
