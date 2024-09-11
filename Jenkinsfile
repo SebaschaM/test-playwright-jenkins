@@ -9,8 +9,8 @@ pipeline {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
         BRANCH = 'main'
         CREDENTIALS_ID = 'credentials'  // Asegúrate que este ID corresponda a tus credenciales almacenadas
-        TELEGRAM_TOKEN = '7377618683:AAEx00qqBQ_VfXS6mIQBZdQcuGrs9SuWpgg'  // Token de tu bot de Telegram
-        TELEGRAM_CHAT_ID = '7377618683'  // ID del chat donde se enviarán las notificaciones
+        TELEGRAM_TOKEN = '7377618683:AAEx00qqBQ_VfXS6mIQBZdQcuGrs9SuWpgg'  // Token del bot de Telegram
+        TELEGRAM_CHAT_ID = '1852594941'  // Chat ID donde se enviarán las notificaciones
     }
 
     stages {
@@ -93,8 +93,8 @@ pipeline {
             // Notificación de éxito en Telegram
             script {
                 sh """
-                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \
-                -d chat_id=${TELEGRAM_CHAT_ID} \
+                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
+                -d chat_id=${TELEGRAM_CHAT_ID} \\
                 -d text="🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente."
                 """
             }
@@ -106,8 +106,8 @@ pipeline {
             // Notificación de fallo en Telegram
             script {
                 sh """
-                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \
-                -d chat_id=${TELEGRAM_CHAT_ID} \
+                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
+                -d chat_id=${TELEGRAM_CHAT_ID} \\
                 -d text="🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles."
                 """
             }
