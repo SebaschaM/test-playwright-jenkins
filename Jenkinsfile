@@ -38,7 +38,7 @@ pipeline {
                 script {
                     try {
                         // Instala las dependencias del sistema para Playwright
-                        sh 'sudo npx playwright install-deps' 
+                        sh 'npx playwright install-deps' 
                     } catch (Exception e) {
                         error "Failed to install system dependencies: ${e.getMessage()}"
                     }
