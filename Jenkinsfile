@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'nodeversion21'  // Asegúrate que 'nodeversion21' esté configurado en Jenkins
+        nodejs 'nodeversion21'  // Asegúrate de que 'nodeversion21' esté configurado en Jenkins
     }
 
     environment {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
         BRANCH = 'main'
-        CREDENTIALS_ID = 'credentials'  // Asegúrate que este ID corresponda a tus credenciales almacenadas
+        CREDENTIALS_ID = 'credentials'  // Asegúrate de que este ID corresponda a tus credenciales almacenadas
         TELEGRAM_TOKEN = '7377618683:AAEx00qqBQ_VfXS6mIQBZdQcuGrs9SuWpgg'  // Token del bot de Telegram
         TELEGRAM_CHAT_ID = '1852594941'  // Chat ID donde se enviarán las notificaciones
     }
@@ -76,7 +76,7 @@ pipeline {
         stage('Post-Install Cleanup') {
             steps {
                 echo 'Cleaning up temporary files...'
-                sh 'npm cache clean --force'  // Limpieza de caché npm sin sudo
+                sh 'npm cache clean --force'  // Limpieza de caché npm
             }
         }
     }
@@ -90,13 +90,14 @@ pipeline {
         success {
             echo 'Build and tests completed successfully!'
 
+            // Publica el reporte HTML, permitir que continúe si no existe
             publishHTML([
                 reportName: 'Playwright Report',
                 reportDir: 'playwright-report',
                 reportFiles: 'index.html',
                 keepAll: true,
                 alwaysLinkToLastBuild: true,
-                allowMissing: false  // Permitir que continúe si no encuentra el reporte
+                allowMissing: true  // Cambiado a true para permitir que continúe si no encuentra el reporte
             ])
 
             // Notificación de éxito en Telegram
