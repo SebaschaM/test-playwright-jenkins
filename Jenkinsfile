@@ -100,6 +100,8 @@ pipeline {
                 allowMissing: true  // Cambiado a true para permitir que continúe si no encuentra el reporte
             ])
 
+            echo 'Entrando a la carpeta playwright-report...'
+
             // Notificación de éxito en Telegram
             script {
                 sh """
