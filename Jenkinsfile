@@ -90,6 +90,15 @@ pipeline {
         success {
             echo 'Build and tests completed successfully!'
 
+             publishHTML([
+                reportName: 'Playwright Report',
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: false
+            ])
+
             // Notificación de éxito en Telegram
             script {
                 sh """
