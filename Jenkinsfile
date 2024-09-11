@@ -9,8 +9,8 @@ pipeline {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
         BRANCH = 'main'
         CREDENTIALS_ID = 'credentials'  // Asegúrate de que este ID corresponda a tus credenciales almacenadas
-        TELEGRAM_TOKEN = '7041697925:AAE1_pGd_y8WVShJrJpB6jf8XL58qNsTLI4'  // Token del bot de Telegram
-        TELEGRAM_CHAT_ID = '-1002184026427'  // Chat ID donde se enviarán las notificaciones
+        TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')  // Referencia a las credenciales
+        TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')  // Referencia a las credenciales
     }
 
     stages {
@@ -82,7 +82,6 @@ pipeline {
     }
 
     post {
-
         success {
             echo 'Build and tests completed successfully!'
 
@@ -109,7 +108,7 @@ pipeline {
 
             // Enviar el archivo index.html del reporte a Telegram, verificando que el archivo exista
             script {
-                def reportFile = "playwright-report/index.html"
+                def reportFile = 'playwright-report/index.html'
                 if (fileExists(reportFile)) {
                     // Correcto uso de `curl` para enviar el archivo
                     sh """
