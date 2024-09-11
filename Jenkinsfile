@@ -82,10 +82,6 @@ pipeline {
     }
 
     post {
-        always {
-            echo 'Cleaning up workspace...'
-            cleanWs()  // Limpia el workspace después del pipeline
-        }
 
         success {
             echo 'Build and tests completed successfully!'
