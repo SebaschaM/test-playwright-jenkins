@@ -32,19 +32,6 @@ pipeline {
             }
         }
 
-        stage('Install System Dependencies') {
-            steps {
-                echo 'Installing system dependencies...'
-                script {
-                    try {
-                        sh 'npx playwright install-deps'  // Ejecuta sin sudo
-                    } catch (Exception e) {
-                        error "Failed to install system dependencies: ${e.getMessage()}"
-                    }
-                }
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 echo 'Installing npm dependencies...'
