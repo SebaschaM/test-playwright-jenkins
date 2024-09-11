@@ -32,6 +32,20 @@ pipeline {
             }
         }
 
+        stage('Install System Dependencies') {
+            steps {
+                echo 'Installing system dependencies...'
+                script {
+                    try {
+                        // Instala las dependencias del sistema para Playwright
+                        sh 'sudo npx playwright install-deps' 
+                    } catch (Exception e) {
+                        error "Failed to install system dependencies: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 echo 'Installing npm dependencies...'
