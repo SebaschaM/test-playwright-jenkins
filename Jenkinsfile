@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'nodeversion21'  // Asegúrate de que 'nodeversion21' esté configurado en Jenkins
+    }
+
     environment {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
         BRANCH = 'main'
@@ -12,6 +16,19 @@ pipeline {
             steps {
                 echo 'Preparing environment...'
                 cleanWs()  // Limpia el workspace antes de iniciar
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing npm dependencies...'
+                script {
+                    try {
+                        sh 'npm install --silent'  // `--silent` para reducir el ruido en los logs
+                    } catch (Exception e) {
+                        error "Failed to install npm dependencies: ${e.getMessage()}"
+                    }
+                }
             }
         }
 
@@ -92,7 +109,7 @@ pipeline {
             when {
                 branch 'main'
             }
-            sendTelegramNotification("🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.")
+            sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
 
             // Enviar el archivo index.html del reporte a Telegram, verificando que el archivo exista
             sendReportToTelegram()
@@ -105,7 +122,7 @@ pipeline {
             when {
                 branch 'main'
             }
-            sendTelegramNotification("🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles.")
+            sendTelegramNotification('🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles.')
         }
     }
 }
