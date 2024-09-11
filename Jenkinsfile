@@ -2,85 +2,63 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'nodeversion21'  // Asegúrate de que 'nodeversion21' esté configurado en Jenkins
+        nodejs 'nodeversion21'
     }
 
     environment {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
         BRANCH = 'main'
-        CREDENTIALS_ID = 'credentials'  // Asegúrate de que este ID corresponda a tus credenciales almacenadas
+        CREDENTIALS_ID = 'credentials'
+        TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')
+        TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')
     }
 
     stages {
-        stage('Prepare') {
-            steps {
-                echo 'Preparing environment...'
-                cleanWs()  // Limpia el workspace antes de iniciar
-            }
-        }
-
-        stage('Git Clone') {
-            steps {
-                echo 'Cloning the repository...'
-                script {
-                    try {
+        stage('Preparation') {
+            stages {
+                stage('Clean Workspace') {
+                    steps {
+                        echo 'Cleaning workspace...'
+                        cleanWs()
+                    }
+                }
+                stage('Clone Repository') {
+                    steps {
+                        echo 'Cloning the repository...'
                         git branch: "${BRANCH}", credentialsId: "${CREDENTIALS_ID}", url: "${REPO_URL}"
-                    } catch (Exception e) {
-                        error "Failed to clone repository: ${e.getMessage()}"
                     }
                 }
             }
         }
 
         stage('Install Dependencies') {
-            steps {
-                echo 'Installing npm dependencies...'
-                script {
-                    try {
-                        sh 'npm install'  // Instala las dependencias de npm
-                    } catch (Exception e) {
-                        error "Failed to install npm dependencies: ${e.getMessage()}"
+            parallel {
+                stage('Install NPM Dependencies') {
+                    steps {
+                        echo 'Installing npm dependencies...'
+                        sh 'npm install'
+                    }
+                }
+                stage('Install Playwright Dependencies') {
+                    steps {
+                        echo 'Installing Playwright dependencies...'
+                        sh 'npx playwright install'
                     }
                 }
             }
         }
 
-        stage('Install Playwright') {
-            when {
-                expression { env.BRANCH == 'main' }  // Solo instala si está en la rama 'main'
-            }
-            steps {
-                echo 'Installing Playwright...'
-                script {
-                    try {
-                        sh 'npx playwright install'  // Instala las dependencias de Playwright necesarias
-                    } catch (Exception e) {
-                        error "Failed to install Playwright: ${e.getMessage()}"
-                    }
-                }
-            }
-        }
-
-        stage('Run Playwright Tests') {
-            when {
-                expression { env.BRANCH == 'main' }  // Solo ejecuta las pruebas si la rama es 'main'
-            }
+        stage('Run Tests') {
             steps {
                 echo 'Running Playwright tests...'
-                script {
-                    try {
-                        sh 'npx playwright test'  // Ejecuta las pruebas con Playwright
-                    } catch (Exception e) {
-                        error "Playwright tests failed: ${e.getMessage()}"
-                    }
-                }
+                sh 'npx playwright test'
             }
         }
 
         stage('Post-Install Cleanup') {
             steps {
-                echo 'Cleaning up temporary files...'
-                sh 'npm cache clean --force'  // Limpieza de caché npm
+                echo 'Cleaning up...'
+                sh 'npm cache clean --force'
             }
         }
     }
@@ -88,35 +66,12 @@ pipeline {
     post {
         success {
             echo 'Build and tests completed successfully!'
-
-            // Publicar reporte HTML si existe
-            script {
-                if (fileExists('playwright-report/index.html')) {
-                    publishHTML([
-                    reportName: 'Playwright Report',
-                    reportDir: 'playwright-report',
-                    reportFiles: 'index.html',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true,
-                    allowMissing: true
-                ])
-                }
-            }
-
-            // Notificación de éxito en Telegram
-            script {
-                sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
-                sendReportToTelegram()  // Solo si el reporte existe
-            }
+            sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
+            sendReportToTelegram()
         }
-
         failure {
-            echo 'Build or tests failed. Please check the logs.'
-
-            // Notificación de fallo en Telegram
-            script {
-                sendTelegramNotification('🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles.')
-            }
+            echo 'Build or tests failed.'
+            sendTelegramNotification('🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles.')
         }
     }
 }
