@@ -9,8 +9,8 @@ pipeline {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
         BRANCH = 'main'
         CREDENTIALS_ID = 'credentials'  // Asegúrate de que este ID corresponda a tus credenciales almacenadas
-        TELEGRAM_TOKEN = '7377618683:AAEx00qqBQ_VfXS6mIQBZdQcuGrs9SuWpgg'  // Token del bot de Telegram
-        TELEGRAM_CHAT_ID = '1852594941'  // Chat ID donde se enviarán las notificaciones
+        TELEGRAM_TOKEN = '7041697925:AAE1_pGd_y8WVShJrJpB6jf8XL58qNsTLI4'  // Token del bot de Telegram
+        TELEGRAM_CHAT_ID = '5504584007'  // Chat ID donde se enviarán las notificaciones
     }
 
     stages {
