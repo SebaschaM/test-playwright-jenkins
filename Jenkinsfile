@@ -24,7 +24,7 @@ pipeline {
                 echo 'Installing npm dependencies...'
                 script {
                     try {
-                        sh 'npm install --silent'  // `--silent` para reducir el ruido en los logs
+                        sh 'npm install'  // `--silent` para reducir el ruido en los logs
                     } catch (Exception e) {
                         error "Failed to install npm dependencies: ${e.getMessage()}"
                     }
@@ -92,37 +92,34 @@ pipeline {
         success {
             echo 'Build and tests completed successfully!'
 
-            // Publica el reporte HTML solo si el archivo de reporte existe
-            when {
-                fileExists('playwright-report/index.html')  // Solo publica si el archivo existe
+            // Publicar reporte HTML si existe
+            script {
+                if (fileExists('playwright-report/index.html')) {
+                    publishHTML([
+                    reportName: 'Playwright Report',
+                    reportDir: 'playwright-report',
+                    reportFiles: 'index.html',
+                    keepAll: true,
+                    alwaysLinkToLastBuild: true,
+                    allowMissing: true
+                ])
+                }
             }
-            publishHTML([
-                reportName: 'Playwright Report',
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: true
-            ])
 
-            // Notificación de éxito en Telegram, solo si estamos en la rama 'main'
-            when {
-                branch 'main'
+            // Notificación de éxito en Telegram
+            script {
+                sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
+                sendReportToTelegram()  // Solo si el reporte existe
             }
-            sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
-
-            // Enviar el archivo index.html del reporte a Telegram, verificando que el archivo exista
-            sendReportToTelegram()
         }
 
         failure {
             echo 'Build or tests failed. Please check the logs.'
 
-            // Notificación de fallo en Telegram solo si el fallo ocurre en la rama 'main'
-            when {
-                branch 'main'
+            // Notificación de fallo en Telegram
+            script {
+                sendTelegramNotification('🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles.')
             }
-            sendTelegramNotification('🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles.')
         }
     }
 }
