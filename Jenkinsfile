@@ -20,9 +20,6 @@ pipeline {
         }
 
         stage('Git Clone') {
-            when {
-                branch 'main'  // Solo clona si la rama es 'main'
-            }
             steps {
                 echo 'Cloning the repository...'
                 script {
