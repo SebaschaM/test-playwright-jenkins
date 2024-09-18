@@ -66,6 +66,20 @@ pipeline {
     post {
         success {
             echo 'Build and tests completed successfully!'
+
+            when {
+                fileExists('playwright-report/index.html')  // Solo publica si el archivo existe
+            }
+            
+            publishHTML([
+                reportName: 'Playwright Report',
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: true
+            ])
+            
             sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
             sendReportToTelegram()
         }
