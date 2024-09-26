@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'node-linux' }  // Esto especifica que el pipeline debe ejecutarse en el nodo 'node-linux'
 
     tools {
         nodejs 'nodeversion21'
@@ -66,7 +66,7 @@ pipeline {
     post {
         success {
             echo 'Build and tests completed successfully!'
-            
+
             publishHTML([
                 reportName: 'Playwright Report',
                 reportDir: 'playwright-report',
@@ -75,7 +75,7 @@ pipeline {
                 alwaysLinkToLastBuild: true,
                 allowMissing: true
             ])
-            
+
             sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
             sendReportToTelegram()
         }
