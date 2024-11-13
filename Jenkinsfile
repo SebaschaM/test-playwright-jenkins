@@ -45,19 +45,15 @@ pipeline {
                         sh 'npx playwright install'
                     }
                 }
-                stage('Test') {
-                    echo 'Running Playwright tests...'
-                    sh 'npx playwright test'
-                }
             }
         }
 
-        //stage('Run Tests') {
-        //    steps {
-        //        echo 'Running Playwright tests...'
-        //        sh 'npx playwright test'
-        //    }
-        //}
+        stage('Run Tests') {
+            steps {
+                echo 'Running Playwright tests...'
+                sh 'npx playwright test'
+            }
+        }
 
         stage('Post-Install Cleanup') {
             steps {
