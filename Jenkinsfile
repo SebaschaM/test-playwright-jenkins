@@ -64,8 +64,10 @@ pipeline {
 
     post {
         success {
+            def endTime = System.currentTimeMillis()
+            def duration = (endTime - currentBuild.startTimeInMillis) / 1000
+    
             echo '¡Compilación y pruebas completadas con éxito!'
-
             publishHTML([
                 reportName: 'Reporte de Playwright',
                 reportDir: 'playwright-report',
@@ -74,15 +76,12 @@ pipeline {
                 alwaysLinkToLastBuild: true,
                 allowMissing: true
             ])
-
-            sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
-            sendReportToTelegram()
-            sendScreenshotToTelegram()
-            sendPDFToTelegram()
+    
+            sendTelegramNotification("🎉 Jenkins Build SUCCESS: Finalizado exitosamente.\nDuración: ${duration} segundos\nReporte: [Ver reporte](URL_DEL_REPORTE)")
         }
         failure {
             echo 'La compilación o las pruebas fallaron.'
-            sendTelegramNotification('🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles.')
+            sendTelegramNotification("🚨 Jenkins Build FAILURE: Fallido. Revisa los logs.\nReporte: [Ver reporte](URL_DEL_REPORTE)")
         }
     }
 }
