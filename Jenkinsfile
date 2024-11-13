@@ -77,6 +77,8 @@ pipeline {
 
             sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
             sendReportToTelegram()
+            sendScreenshotToTelegram()
+            sendPDFToTelegram()
         }
         failure {
             echo 'La compilación o las pruebas fallaron.'
@@ -109,6 +111,38 @@ def sendReportToTelegram() {
             }
         } else {
             echo "El archivo ${reportFile} no existe, no se enviará el reporte a Telegram."
+        }
+    }
+}
+
+def sendScreenshotToTelegram() {
+    script {
+        def screenshotFile = 'screenshot.png'
+        if (fileExists(screenshotFile)) {
+            withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'CHAT_ID')]) {
+                sh """
+                curl -F chat_id=\$CHAT_ID -F photo=@${screenshotFile} \\
+                "https://api.telegram.org/bot\$TOKEN/sendPhoto" -F "caption=Captura del Reporte de Pruebas de Playwright"
+                """
+            }
+        } else {
+            echo "El archivo ${screenshotFile} no existe, no se enviará la captura a Telegram."
+        }
+    }
+}
+
+def sendPDFToTelegram() {
+    script {
+        def pdfFile = 'report.pdf'
+        if (fileExists(pdfFile)) {
+            withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'CHAT_ID')]) {
+                sh """
+                curl -F chat_id=\$CHAT_ID -F document=@${pdfFile} \\
+                "https://api.telegram.org/bot\$TOKEN/sendDocument" -F "caption=Reporte de Pruebas de Playwright en PDF"
+                """
+            }
+        } else {
+            echo "El archivo ${pdfFile} no existe, no se enviará el PDF a Telegram."
         }
     }
 }
