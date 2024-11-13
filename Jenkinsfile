@@ -14,13 +14,6 @@ pipeline {
     }
 
     stages {
-        stage('Limpiar Workspace') {
-            steps {
-                echo 'Limpiando el workspace...'
-                cleanWs()
-            }
-        }
-
         stage('Clonar Repositorio') {
             steps {
                 echo 'Clonando el repositorio...'
