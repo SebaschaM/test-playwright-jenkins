@@ -49,6 +49,7 @@ pipeline {
         stage('Ejecutar Pruebas') {
             steps {
                 echo 'Ejecutando pruebas de Playwright...'
+                sh 'npx playwright install'
                 sh 'npx playwright test'
             }
         }
