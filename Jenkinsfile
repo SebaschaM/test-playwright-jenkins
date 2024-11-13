@@ -1,6 +1,6 @@
 pipeline {
-    agent { label 'Built-In Node' }  // Esto especifica que el pipeline debe ejecutarse en el nodo 'node-linux'
-
+    agent any
+    
     tools {
         nodejs 'nodeversion21'
     }
