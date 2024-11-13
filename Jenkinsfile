@@ -1,6 +1,6 @@
 pipeline {
     agent any
-
+    
     tools {
         nodejs 'nodeversion21'
     }
@@ -14,73 +14,70 @@ pipeline {
     }
 
     stages {
-        stage('Preparation') {
-            stages {
-                stage('Clean Workspace') {
-                    steps {
-                        echo 'Cleaning workspace...'
-                        cleanWs()
-                    }
-                }
-                stage('Clone Repository') {
-                    steps {
-                        echo 'Cloning the repository...'
-                        git branch: "${BRANCH}", credentialsId: "${CREDENTIALS_ID}", url: "${REPO_URL}"
-                    }
-                }
+        //stage('Limpiar Workspace') {
+        //    steps {
+        //        echo 'Limpiando el workspace...'
+        //        cleanWs()
+        //    }
+        //}
+
+        stage('Clonar Repositorio') {
+            steps {
+                echo 'Clonando el repositorio...'
+                git branch: "${BRANCH}", credentialsId: "${CREDENTIALS_ID}", url: "${REPO_URL}"
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Instalar Dependencias') {
             parallel {
-                stage('Install NPM Dependencies') {
+                stage('Instalar Dependencias NPM') {
                     steps {
-                        echo 'Installing npm dependencies...'
+                        echo 'Instalando dependencias npm...'
                         sh 'npm install'
                     }
                 }
-                stage('Install Playwright Dependencies') {
+                stage('Instalar Dependencias Playwright') {
                     steps {
-                        echo 'Installing Playwright dependencies...'
+                        echo 'Instalando dependencias de Playwright...'
                         sh 'npx playwright install'
                     }
                 }
             }
         }
 
-        stage('Run Tests') {
+        stage('Ejecutar Pruebas') {
             steps {
-                echo 'Running Playwright tests...'
+                echo 'Ejecutando pruebas de Playwright...'
                 sh 'npx playwright test'
             }
         }
 
-        stage('Post-Install Cleanup') {
-            steps {
-                echo 'Cleaning up...'
-                sh 'npm cache clean --force'
-            }
-        }
+       //stage('Limpieza Post-Instalación') {
+       //     steps {
+       //         echo 'Realizando limpieza...'
+       //         sh 'npm cache clean --force'
+       //     }
+       //}
     }
 
     post {
         success {
-            echo 'Build and tests completed successfully!'
-            
+            echo '¡Compilación y pruebas completadas con éxito!'
+
             publishHTML([
-                reportName: 'Playwright Report',
+                reportName: 'Reporte de Playwright',
                 reportDir: 'playwright-report',
                 reportFiles: 'index.html',
                 keepAll: true,
                 alwaysLinkToLastBuild: true,
                 allowMissing: true
             ])
-            
+
             sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
             sendReportToTelegram()
         }
         failure {
-            echo 'Build or tests failed.'
+            echo 'La compilación o las pruebas fallaron.'
             sendTelegramNotification('🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles.')
         }
     }
@@ -89,13 +86,11 @@ pipeline {
 def sendTelegramNotification(String message) {
     script {
         withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'CHAT_ID')]) {
-            withEnv(['TELEGRAM_TOKEN=' + TOKEN, 'TELEGRAM_CHAT_ID=' + CHAT_ID]) {
-                sh """
-                curl -s -X POST https://api.telegram.org/bot\$TELEGRAM_TOKEN/sendMessage \\
-                -d chat_id=\$TELEGRAM_CHAT_ID \\
-                -d text="${message}"
-                """
-            }
+            sh """
+            curl -s -X POST https://api.telegram.org/bot\$TOKEN/sendMessage \\
+            -d chat_id=\$CHAT_ID \\
+            -d text="${message}"
+            """
         }
     }
 }
@@ -105,12 +100,10 @@ def sendReportToTelegram() {
         def reportFile = 'playwright-report/index.html'
         if (fileExists(reportFile)) {
             withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'CHAT_ID')]) {
-                withEnv(['TELEGRAM_TOKEN=' + TOKEN, 'TELEGRAM_CHAT_ID=' + CHAT_ID]) {
-                    sh """
-                    curl -F chat_id=\$TELEGRAM_CHAT_ID -F document=@${reportFile} \\
-                    "https://api.telegram.org/bot\$TELEGRAM_TOKEN/sendDocument" -F "caption=Playwright Test Report"
-                    """
-                }
+                sh """
+                curl -F chat_id=\$CHAT_ID -F document=@${reportFile} \\
+                "https://api.telegram.org/bot\$TOKEN/sendDocument" -F "caption=Reporte de Pruebas de Playwright"
+                """
             }
         } else {
             echo "El archivo ${reportFile} no existe, no se enviará el reporte a Telegram."
