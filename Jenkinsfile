@@ -94,15 +94,13 @@ pipeline {
                     allowMissing: true
                 ])
 
-                sendTelegramNotification("🎉 Jenkins Build SUCCESS: Finalizado exitosamente.\nDuración: ${duration} segundos\nPruebas: ✅ ${passedTests} exitosas, ❌ ${failedTests} fallidas\n[Ver reporte](URL_DEL_REPORTE)")
-                
-                // Convertir y enviar el PDF
-                convertAndSendPDFReportToTelegram()
+                // Enviar el PDF en Telegram
+                convertAndSendPDFReportToTelegram(duration, passedTests, failedTests)
             }
         }
         failure {
             echo 'La compilación o las pruebas fallaron.'
-            sendTelegramNotification("🚨 Jenkins Build FAILURE: Fallido. Revisa los logs para más detalles.\n[Ver reporte](URL_DEL_REPORTE)")
+            sendTelegramNotification("🚨 Jenkins Build FAILURE: Fallido. Revisa los logs para más detalles.")
         }
     }
 }
@@ -119,7 +117,7 @@ def sendTelegramNotification(String message) {
     }
 }
 
-def convertAndSendPDFReportToTelegram() {
+def convertAndSendPDFReportToTelegram(duration, passedTests, failedTests) {
     script {
         def htmlReportFile = 'playwright-report/index.html'
         def pdfReportFile = 'playwright-report/report.pdf'
@@ -133,7 +131,7 @@ def convertAndSendPDFReportToTelegram() {
                 withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'CHAT_ID')]) {
                     sh """
                     curl -F chat_id=\$CHAT_ID -F document=@${pdfReportFile} \\
-                    "https://api.telegram.org/bot\$TOKEN/sendDocument" -F "caption=Reporte de Pruebas de Playwright en PDF"
+                    "https://api.telegram.org/bot\$TOKEN/sendDocument" -F "caption=🎉 Jenkins Build SUCCESS: Finalizado exitosamente.\\nDuración: ${duration} segundos\\nPruebas: ✅ ${passedTests} exitosas, ❌ ${failedTests} fallidas"
                     """
                 }
             } else {
