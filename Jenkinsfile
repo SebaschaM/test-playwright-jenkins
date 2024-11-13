@@ -53,7 +53,8 @@ pipeline {
                     env.START_TIME = System.currentTimeMillis().toString()
                 }
                 sh 'npx playwright install'
-                sh 'npx playwright test'
+                // Ejecutamos las pruebas y generamos un reporte en JSON
+                sh 'npx playwright test --reporter=json > playwright-report/report.json'
             }
         }
 
@@ -71,15 +72,14 @@ pipeline {
                 def endTime = System.currentTimeMillis()
                 def duration = (endTime - env.START_TIME.toLong()) / 1000
 
-                // Obtener número de pruebas exitosas y fallidas desde el reporte de Playwright
+                // Leer y parsear el reporte JSON
+                def reportFile = 'playwright-report/report.json'
                 def passedTests = 0
                 def failedTests = 0
-                def reportFile = 'playwright-report/index.html'
                 if (fileExists(reportFile)) {
-                    // Parseamos el archivo HTML para obtener el conteo de pruebas (esto depende de la estructura del HTML de Playwright)
-                    def reportContent = readFile(reportFile)
-                    passedTests = reportContent.count('Test passed')
-                    failedTests = reportContent.count('Test failed')
+                    def reportContent = readJSON(file: reportFile)
+                    passedTests = reportContent.suites[0].specs.findAll { it.ok == true }.size()
+                    failedTests = reportContent.suites[0].specs.findAll { it.ok == false }.size()
                 }
 
                 echo '¡Compilación y pruebas completadas con éxito!'
