@@ -52,7 +52,9 @@ pipeline {
                     // Guardamos el tiempo de inicio
                     env.START_TIME = System.currentTimeMillis().toString()
                 }
-                sh 'npx playwright install'
+                // Crear el directorio para el reporte JSON si no existe
+                sh 'mkdir -p playwright-report'
+                
                 // Ejecutamos las pruebas y generamos un reporte en JSON
                 sh 'npx playwright test --reporter=json > playwright-report/report.json'
             }
