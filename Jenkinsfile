@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     tools {
         nodejs 'nodeversion21'
     }
@@ -55,18 +55,18 @@ pipeline {
             }
         }
 
-        //stage('Post-Install Cleanup') {
-        //   steps {
-        //       echo 'Cleaning up...'
-        //        sh 'npm cache clean --force'
-        //    }
-        //}
+        stage('Post-Install Cleanup') {
+            steps {
+                echo 'Cleaning up...'
+                sh 'npm cache clean --force'
+            }
+        }
     }
 
     post {
         success {
             echo 'Build and tests completed successfully!'
-
+            
             publishHTML([
                 reportName: 'Playwright Report',
                 reportDir: 'playwright-report',
@@ -75,7 +75,7 @@ pipeline {
                 alwaysLinkToLastBuild: true,
                 allowMissing: true
             ])
-
+            
             sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
             sendReportToTelegram()
         }
