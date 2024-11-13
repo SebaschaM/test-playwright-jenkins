@@ -95,6 +95,9 @@ pipeline {
                 ])
 
                 sendTelegramNotification("🎉 Jenkins Build SUCCESS: Finalizado exitosamente.\nDuración: ${duration} segundos\nPruebas: ✅ ${passedTests} exitosas, ❌ ${failedTests} fallidas\n[Ver reporte](URL_DEL_REPORTE)")
+                
+                // Convertir y enviar el PDF
+                convertAndSendPDFReportToTelegram()
             }
         }
         failure {
@@ -112,6 +115,32 @@ def sendTelegramNotification(String message) {
             -d chat_id=\$CHAT_ID \\
             -d text="${message}"
             """
+        }
+    }
+}
+
+def convertAndSendPDFReportToTelegram() {
+    script {
+        def htmlReportFile = 'playwright-report/index.html'
+        def pdfReportFile = 'playwright-report/report.pdf'
+        
+        // Convertir el HTML a PDF
+        if (fileExists(htmlReportFile)) {
+            sh "wkhtmltopdf ${htmlReportFile} ${pdfReportFile}"
+            
+            // Verificar que el PDF fue generado y enviarlo a Telegram
+            if (fileExists(pdfReportFile)) {
+                withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'CHAT_ID')]) {
+                    sh """
+                    curl -F chat_id=\$CHAT_ID -F document=@${pdfReportFile} \\
+                    "https://api.telegram.org/bot\$TOKEN/sendDocument" -F "caption=Reporte de Pruebas de Playwright en PDF"
+                    """
+                }
+            } else {
+                echo "El archivo ${pdfReportFile} no fue generado, no se enviará el reporte en PDF a Telegram."
+            }
+        } else {
+            echo "El archivo ${htmlReportFile} no existe, no se realizará la conversión a PDF ni se enviará el reporte."
         }
     }
 }
