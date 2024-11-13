@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'jorito' }
+    agent any
     
     tools {
         nodejs 'nodeversion21'
