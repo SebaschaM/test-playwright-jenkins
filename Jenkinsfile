@@ -55,12 +55,12 @@ pipeline {
             }
         }
 
-        stage('Post-Install Cleanup') {
-            steps {
-                echo 'Cleaning up...'
-                sh 'npm cache clean --force'
-            }
-        }
+        //stage('Post-Install Cleanup') {
+        //   steps {
+        //       echo 'Cleaning up...'
+        //        sh 'npm cache clean --force'
+        //    }
+        //}
     }
 
     post {
