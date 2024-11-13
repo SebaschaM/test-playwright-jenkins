@@ -54,12 +54,27 @@ pipeline {
             }
         }
 
-       stage('Limpieza Post-Instalación') {
+       stage('Generar Captura del Reporte') {
+            steps {
+                echo 'Generando captura de pantalla del reporte...'
+                sh 'npx playwright screenshot --url=file://$(pwd)/playwright-report/index.html --path=screenshot.png'
+            }
+        }
+
+        stage('Convertir Reporte a PDF') {
+            steps {
+                echo 'Convirtiendo reporte HTML a PDF...'
+                sh 'apt-get update && apt-get install -y wkhtmltopdf'
+                sh 'wkhtmltopdf playwright-report/index.html report.pdf'
+            }
+        }
+
+        stage('Limpieza Post-Instalación') {
             steps {
                 echo 'Realizando limpieza...'
                 sh 'npm cache clean --force'
             }
-       }
+        }
     }
 
     post {
