@@ -14,12 +14,12 @@ pipeline {
     }
 
     stages {
-        //stage('Limpiar Workspace') {
-        //    steps {
-        //        echo 'Limpiando el workspace...'
-        //        cleanWs()
-        //    }
-        //}
+        stage('Limpiar Workspace') {
+            steps {
+                echo 'Limpiando el workspace...'
+                cleanWs()
+            }
+        }
 
         stage('Clonar Repositorio') {
             steps {
@@ -46,7 +46,7 @@ pipeline {
                 stage('Instalar Dependencias Playwright') {
                     steps {
                         echo 'Instalando dependencias de Playwright...'
-                        sh 'npx playwright install'
+                        sh 'npx playwright install --with-deps'
                     }
                 }
             }
@@ -59,12 +59,12 @@ pipeline {
             }
         }
 
-       //stage('Limpieza Post-Instalación') {
-       //     steps {
-       //         echo 'Realizando limpieza...'
-       //         sh 'npm cache clean --force'
-       //     }
-       //}
+       stage('Limpieza Post-Instalación') {
+            steps {
+                echo 'Realizando limpieza...'
+                sh 'npm cache clean --force'
+            }
+       }
     }
 
     post {
