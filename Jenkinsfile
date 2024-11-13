@@ -28,6 +28,13 @@ pipeline {
             }
         }
 
+        stage('Fix Permissions') {
+            steps {
+                echo 'Ajustando permisos en test-results...'
+                sh 'chmod -R 775 test-results'
+            }
+        }
+
         stage('Instalar Dependencias') {
             parallel {
                 stage('Instalar Dependencias NPM') {
