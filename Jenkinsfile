@@ -94,7 +94,7 @@ pipeline {
                     allowMissing: true
                 ])
 
-                // Enviar el PDF en Telegram
+                // Enviar el PDF en Telegram con el mensaje completo
                 convertAndSendPDFReportToTelegram(duration, passedTests, failedTests)
             }
         }
