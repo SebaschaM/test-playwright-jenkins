@@ -30,21 +30,19 @@ pipeline {
         }
 
         stage('Instalar Dependencias') {
-            parallel {
-                stage('Instalar Dependencias NPM') {
-                    steps {
-                        echo 'Instalando dependencias npm...'
-                        sh 'npm ci'
-                    }
-                }
-                stage('Instalar Dependencias Playwright') {
-                    steps {
-                        echo 'Instalando dependencias de Playwright...'
-                        sh 'npx playwright install --with-deps'
-                    }
-                }
+            steps {
+                echo 'Instalando dependencias npm...'
+                sh 'npm ci'
             }
         }
+
+        stage('Instalar Dependencias Playwright') {
+            steps {
+                echo 'Instalando dependencias de Playwright...'
+                sh 'npx playwright install --with-deps'
+            }
+        }
+
 
         stage('Ejecutar Pruebas') {
             steps {
