@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+    // prueba
     tools {
         nodejs 'nodeversion21'
     }
@@ -14,6 +14,7 @@ pipeline {
     }
 
     stages {
+
         stage('Limpiar Workspace') {
             steps {
                 echo 'Limpiando el workspace...'
@@ -48,15 +49,8 @@ pipeline {
         stage('Ejecutar Pruebas') {
             steps {
                 echo 'Ejecutando pruebas de Playwright...'
-                script {
-                    // Guardamos el tiempo de inicio
-                    env.START_TIME = System.currentTimeMillis().toString()
-                }
-                // Crear el directorio para el reporte JSON si no existe
-                sh 'mkdir -p playwright-report'
-                
-                // Ejecutamos las pruebas y generamos un reporte en JSON
-                sh 'npx playwright test --reporter=json > playwright-report/report.json'
+                sh 'npx playwright install'
+                sh 'npx playwright test'
             }
         }
 
@@ -70,37 +64,23 @@ pipeline {
 
     post {
         success {
-            script {
-                def endTime = System.currentTimeMillis()
-                def duration = (endTime - env.START_TIME.toLong()) / 1000
+            echo '¡Compilación y pruebas completadas con éxito!'
 
-                // Leer y parsear el reporte JSON
-                def reportFile = 'playwright-report/report.json'
-                def passedTests = 0
-                def failedTests = 0
-                if (fileExists(reportFile)) {
-                    def reportContent = readJSON(file: reportFile)
-                    passedTests = reportContent.suites[0].specs.findAll { it.ok == true }.size()
-                    failedTests = reportContent.suites[0].specs.findAll { it.ok == false }.size()
-                }
+            publishHTML([
+                reportName: 'Reporte de Playwright',
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: true
+            ])
 
-                echo '¡Compilación y pruebas completadas con éxito!'
-                publishHTML([
-                    reportName: 'Reporte de Playwright',
-                    reportDir: 'playwright-report',
-                    reportFiles: 'index.html',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true,
-                    allowMissing: true
-                ])
-
-                // Enviar el PDF en Telegram con el mensaje completo
-                convertAndSendPDFReportToTelegram(duration, passedTests, failedTests)
-            }
+            sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
+            sendReportToTelegram()
         }
         failure {
             echo 'La compilación o las pruebas fallaron.'
-            sendTelegramNotification("🚨 Jenkins Build FAILURE: Fallido. Revisa los logs para más detalles.")
+            sendTelegramNotification('🚨 Jenkins Build FAILURE: El pipeline ha fallado. Revisa los logs para más detalles.')
         }
     }
 }
@@ -117,28 +97,18 @@ def sendTelegramNotification(String message) {
     }
 }
 
-def convertAndSendPDFReportToTelegram(duration, passedTests, failedTests) {
+def sendReportToTelegram() {
     script {
-        def htmlReportFile = 'playwright-report/index.html'
-        def pdfReportFile = 'playwright-report/report.pdf'
-        
-        // Convertir el HTML a PDF
-        if (fileExists(htmlReportFile)) {
-            sh "wkhtmltopdf ${htmlReportFile} ${pdfReportFile}"
-            
-            // Verificar que el PDF fue generado y enviarlo a Telegram
-            if (fileExists(pdfReportFile)) {
-                withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'CHAT_ID')]) {
-                    sh """
-                    curl -F chat_id=\$CHAT_ID -F document=@${pdfReportFile} \\
-                    "https://api.telegram.org/bot\$TOKEN/sendDocument" -F "caption=🎉 Jenkins Build SUCCESS: Finalizado exitosamente.\\nDuración: ${duration} segundos\\nPruebas: ✅ ${passedTests} exitosas, ❌ ${failedTests} fallidas"
-                    """
-                }
-            } else {
-                echo "El archivo ${pdfReportFile} no fue generado, no se enviará el reporte en PDF a Telegram."
+        def reportFile = 'playwright-report/index.html'
+        if (fileExists(reportFile)) {
+            withCredentials([string(credentialsId: 'TELEGRAM_TOKEN', variable: 'TOKEN'), string(credentialsId: 'TELEGRAM_CHAT_ID', variable: 'CHAT_ID')]) {
+                sh """
+                curl -F chat_id=\$CHAT_ID -F document=@${reportFile} \\
+                "https://api.telegram.org/bot\$TOKEN/sendDocument" -F "caption=Reporte de Pruebas de Playwright"
+                """
             }
         } else {
-            echo "El archivo ${htmlReportFile} no existe, no se realizará la conversión a PDF ni se enviará el reporte."
+            echo "El archivo ${reportFile} no existe, no se enviará el reporte a Telegram."
         }
     }
 }
