@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'docker-ubuntu-worker' }
+    agent any
     
     tools {
         nodejs 'nodeversion21'
