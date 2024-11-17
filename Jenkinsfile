@@ -37,6 +37,7 @@ pipeline {
             steps {
                 echo 'Instalando dependencias npm...'
                 sh 'npm ci'
+                sh 'npx playwright test'
             }
         }
 
@@ -48,14 +49,14 @@ pipeline {
         //}
 
 
-        stage('Ejecutar Pruebas') {
-            steps {
-                echo 'Ejecutando pruebas de Playwright...'
+        //stage('Ejecutar Pruebas') {
+        //    steps {
+        //        echo 'Ejecutando pruebas de Playwright...'
                
-                sh 'npx playwright install-deps'
-                sh 'npx playwright test'
-            }
-        }
+        //        sh 'npx playwright install-deps'
+        //        sh 'npx playwright test'
+        //    }
+        //}
 
        //stage('Limpieza Post-Instalación') {
        //     steps {
