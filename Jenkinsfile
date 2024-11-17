@@ -1,8 +1,8 @@
 pipeline {
-    agent any
-    // prueba 2
-    tools {
-        nodejs 'nodeversion21'
+    agent {
+        docker {
+            image 'mcr.microsoft.com/playwright:v1.48.1-noble' // La imagen de Playwright
+        }
     }
 
     environment {
@@ -14,14 +14,6 @@ pipeline {
     }
 
     stages {
-
-        //stage('Limpiar Workspace') {
-        //    steps {
-        //        echo 'Limpiando el workspace...'
-        //        cleanWs()
-        //    }
-        //}
-        
         stage('Clonar Repositorio') {
             steps {
                 echo 'Clonando el repositorio...'
@@ -29,60 +21,25 @@ pipeline {
             }
         }
 
-        stage('Preparar Entorno') {
-            steps {
-                script {
-                    // Eliminar el contenedor si ya existe
-                    sh 'docker rm -f playwright-test || true'
-                    // Crear un nuevo contenedor
-                    sh 'docker run -d --rm --name playwright-test mcr.microsoft.com/playwright:v1.48.1-noble sleep infinity'
-                }
-            }
-        }
-
-        stage('Instalar Navegadores') {
-            steps {
-                sh 'npx playwright install'
-            }
-        }
-
         stage('Instalar Dependencias') {
             steps {
                 echo 'Instalando dependencias npm...'
-                sh 'npm ci'
-                sh 'npx playwright test'
+                sh 'npm ci' // Instalar dependencias con npm
             }
         }
 
-        //stage('Instalar Dependencias Playwright') {
-        //    steps {
-        //        echo 'Instalando dependencias de Playwright...'
-        //        sh 'npx playwright install --with-deps'
-        //    }
-        //}
-
-
-        //stage('Ejecutar Pruebas') {
-        //    steps {
-        //        echo 'Ejecutando pruebas de Playwright...'
-               
-        //        sh 'npx playwright install-deps'
-        //        sh 'npx playwright test'
-        //    }
-        //}
-
-       //stage('Limpieza Post-Instalación') {
-       //     steps {
-       //         echo 'Realizando limpieza...'
-       //         sh 'npm cache clean --force'
-       //     }
-       //}
+        stage('Ejecutar Pruebas') {
+            steps {
+                echo 'Ejecutando pruebas de Playwright...'
+                sh 'npx playwright install' // Instalar navegadores si no se ha hecho
+                sh 'npx playwright test'    // Ejecutar las pruebas
+            }
+        }
     }
 
     post {
         success {
             echo '¡Compilación y pruebas completadas con éxito!'
-
             publishHTML([
                 reportName: 'Reporte de Playwright',
                 reportDir: 'playwright-report',
@@ -91,7 +48,6 @@ pipeline {
                 alwaysLinkToLastBuild: true,
                 allowMissing: true
             ])
-
             sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
             sendReportToTelegram()
         }
