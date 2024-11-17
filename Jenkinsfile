@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/playwright:v1.48.1-noble' // La imagen de Playwright
-        }
-    }
+    agent any // Usamos "any" aquí ya que Docker se maneja dentro de un stage.
 
     environment {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
@@ -21,6 +17,17 @@ pipeline {
             }
         }
 
+        stage('Preparar Entorno') {
+            steps {
+                script {
+                    // Eliminar el contenedor si ya existe
+                    sh 'docker rm -f playwright-test || true'
+                    // Crear un nuevo contenedor de Playwright
+                    sh 'docker run -d --rm --name playwright-test mcr.microsoft.com/playwright:v1.48.1-noble sleep infinity'
+                }
+            }
+        }
+
         stage('Instalar Dependencias') {
             steps {
                 echo 'Instalando dependencias npm...'
@@ -28,10 +35,10 @@ pipeline {
             }
         }
 
-        stage('Ejecutar Pruebas') {
+        stage('Instalar Navegadores y Ejecutar Pruebas') {
             steps {
-                echo 'Ejecutando pruebas de Playwright...'
-                sh 'npx playwright install' // Instalar navegadores si no se ha hecho
+                echo 'Instalando navegadores y ejecutando pruebas de Playwright...'
+                sh 'npx playwright install' // Instalar los navegadores necesarios
                 sh 'npx playwright test'    // Ejecutar las pruebas
             }
         }
