@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'mcr.microsoft.com/playwright:v1.44.1-jammy'
+        }
+    }
     // prueba 2
     tools {
         nodejs 'nodeversion21'
