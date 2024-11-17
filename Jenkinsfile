@@ -36,12 +36,12 @@ pipeline {
             }
         }
 
-        stage('Instalar Dependencias Playwright') {
-            steps {
-                echo 'Instalando dependencias de Playwright...'
-                sh 'npx playwright install --with-deps'
-            }
-        }
+        //stage('Instalar Dependencias Playwright') {
+        //    steps {
+        //        echo 'Instalando dependencias de Playwright...'
+        //        sh 'npx playwright install --with-deps'
+        //    }
+        //}
 
 
         stage('Ejecutar Pruebas') {
