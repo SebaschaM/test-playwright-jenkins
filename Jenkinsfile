@@ -38,6 +38,12 @@ pipeline {
             }
         }
 
+        stage('Instalar Navegadores') {
+            steps {
+                sh 'npx playwright install'
+            }
+        }
+
         stage('Instalar Dependencias') {
             steps {
                 echo 'Instalando dependencias npm...'
