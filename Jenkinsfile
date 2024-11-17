@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/playwright:v1.44.1-jammy'
-        }
-    }
+    agent any
     // prueba 2
     tools {
         nodejs 'nodeversion21'
@@ -30,6 +26,15 @@ pipeline {
             steps {
                 echo 'Clonando el repositorio...'
                 git branch: "${BRANCH}", credentialsId: "${CREDENTIALS_ID}", url: "${REPO_URL}"
+            }
+        }
+
+        stage('Preparar Entorno') {
+            steps {
+                script {
+                    // Lanza el contenedor de Playwright
+                    sh 'docker run -d --rm --name playwright-test mcr.microsoft.com/playwright:v1.48.1-noble sleep infinity'
+                }
             }
         }
 
