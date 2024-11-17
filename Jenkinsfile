@@ -19,12 +19,12 @@ pipeline {
 
     stages {
 
-        stage('Limpiar Workspace') {
-            steps {
-                echo 'Limpiando el workspace...'
-                cleanWs()
-            }
-        }
+        //stage('Limpiar Workspace') {
+        //    steps {
+        //        echo 'Limpiando el workspace...'
+        //        cleanWs()
+        //    }
+        //}
         
         stage('Clonar Repositorio') {
             steps {
@@ -57,12 +57,12 @@ pipeline {
             }
         }
 
-       stage('Limpieza Post-Instalación') {
-            steps {
-                echo 'Realizando limpieza...'
-                sh 'npm cache clean --force'
-            }
-       }
+       //stage('Limpieza Post-Instalación') {
+       //     steps {
+       //         echo 'Realizando limpieza...'
+       //         sh 'npm cache clean --force'
+       //     }
+       //}
     }
 
     post {
