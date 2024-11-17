@@ -48,6 +48,7 @@ pipeline {
             steps {
                 echo 'Ejecutando pruebas de Playwright...'
                 sh 'npx playwright install'
+                sh 'npx playwright install-deps'
                 sh 'npx playwright test'
             }
         }
