@@ -1,5 +1,5 @@
 pipeline {
-    agent any // Usamos "any" aquí ya que Docker se maneja dentro de un stage.
+    agent any
 
     environment {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
@@ -28,18 +28,27 @@ pipeline {
             }
         }
 
-        stage('Instalar Dependencias') {
+        stage('Instalar Node.js y Dependencias') {
             steps {
-                echo 'Instalando dependencias npm...'
-                sh 'npm ci' // Instalar dependencias con npm
+                echo 'Instalando Node.js y dependencias npm...'
+                sh '''
+                # Instalar Node.js y npm en el contenedor de Playwright
+                docker exec playwright-test bash -c "apt update && apt install -y nodejs npm"
+                # Instalar dependencias con npm
+                docker exec playwright-test bash -c "cd /var/jenkins_home/workspace/tiendada-test-api && npm ci"
+                '''
             }
         }
 
         stage('Instalar Navegadores y Ejecutar Pruebas') {
             steps {
                 echo 'Instalando navegadores y ejecutando pruebas de Playwright...'
-                sh 'npx playwright install' // Instalar los navegadores necesarios
-                sh 'npx playwright test'    // Ejecutar las pruebas
+                sh '''
+                # Instalar navegadores si no se ha hecho
+                docker exec playwright-test bash -c "npx playwright install"
+                # Ejecutar las pruebas
+                docker exec playwright-test bash -c "npx playwright test"
+                '''
             }
         }
     }
