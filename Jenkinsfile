@@ -32,7 +32,9 @@ pipeline {
         stage('Preparar Entorno') {
             steps {
                 script {
-                    // Lanza el contenedor de Playwright
+                    // Eliminar el contenedor si ya existe
+                    sh 'docker rm -f playwright-test || true'
+                    // Crear un nuevo contenedor
                     sh 'docker run -d --rm --name playwright-test mcr.microsoft.com/playwright:v1.48.1-noble sleep infinity'
                 }
             }
