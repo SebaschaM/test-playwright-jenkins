@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent { label 'docker-ubuntu-worker' }
+    // prueba 2
+    tools {
+        nodejs 'nodeversion21'
+    }
 
     environment {
         REPO_URL = 'https://github.com/SebaschaM/test-playwright-jenkins'
@@ -10,6 +14,14 @@ pipeline {
     }
 
     stages {
+
+        stage('Limpiar Workspace') {
+            steps {
+                echo 'Limpiando el workspace...'
+                cleanWs()
+            }
+        }
+        
         stage('Clonar Repositorio') {
             steps {
                 echo 'Clonando el repositorio...'
@@ -17,45 +29,41 @@ pipeline {
             }
         }
 
-        stage('Preparar Entorno') {
+        stage('Instalar Dependencias') {
             steps {
-                script {
-                    // Eliminar el contenedor si ya existe
-                    sh 'docker rm -f playwright-test || true'
-                    // Crear un nuevo contenedor de Playwright
-                    sh 'docker run -d --rm --name playwright-test mcr.microsoft.com/playwright:v1.48.1-noble sleep infinity'
-                }
+                echo 'Instalando dependencias npm...'
+                sh 'npm ci'
             }
         }
 
-        stage('Instalar Node.js y Dependencias') {
+        stage('Instalar Dependencias Playwright') {
             steps {
-                echo 'Instalando Node.js y dependencias npm...'
-                sh '''
-                # Instalar Node.js y npm en el contenedor de Playwright
-                docker exec playwright-test bash -c "apt update && apt install -y nodejs npm"
-                # Instalar dependencias con npm
-                docker exec playwright-test bash -c "cd /var/jenkins_home/workspace/tiendada-test-api && npm ci"
-                '''
+                echo 'Instalando dependencias de Playwright...'
+                sh 'npx playwright install --with-deps'
             }
         }
 
-        stage('Instalar Navegadores y Ejecutar Pruebas') {
+
+        stage('Ejecutar Pruebas') {
             steps {
-                echo 'Instalando navegadores y ejecutando pruebas de Playwright...'
-                sh '''
-                # Instalar navegadores si no se ha hecho
-                docker exec playwright-test bash -c "npx playwright install"
-                # Ejecutar las pruebas
-                docker exec playwright-test bash -c "npx playwright test"
-                '''
+                echo 'Ejecutando pruebas de Playwright...'
+                sh 'npx playwright install'
+                sh 'npx playwright test'
             }
         }
+
+       stage('Limpieza Post-Instalación') {
+            steps {
+                echo 'Realizando limpieza...'
+                sh 'npm cache clean --force'
+            }
+       }
     }
 
     post {
         success {
             echo '¡Compilación y pruebas completadas con éxito!'
+
             publishHTML([
                 reportName: 'Reporte de Playwright',
                 reportDir: 'playwright-report',
@@ -64,6 +72,7 @@ pipeline {
                 alwaysLinkToLastBuild: true,
                 allowMissing: true
             ])
+
             sendTelegramNotification('🎉 Jenkins Build SUCCESS: El pipeline ha finalizado exitosamente.')
             sendReportToTelegram()
         }
