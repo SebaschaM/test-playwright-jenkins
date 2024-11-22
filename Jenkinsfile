@@ -32,22 +32,15 @@ pipeline {
         stage('Instalar Dependencias') {
             steps {
                 echo 'Instalando dependencias npm...'
-                sh 'npm ci'
+                sh 'test-playwright-jenkins'
+                sh 'npm i'
+                sh 'npx playwright install'
             }
         }
-
-        stage('Instalar Dependencias Playwright') {
-            steps {
-                echo 'Instalando dependencias de Playwright...'
-                sh 'npx playwright install --with-deps'
-            }
-        }
-
 
         stage('Ejecutar Pruebas') {
             steps {
                 echo 'Ejecutando pruebas de Playwright...'
-                sh 'npx playwright install'
                 sh 'npx playwright test'
             }
         }
