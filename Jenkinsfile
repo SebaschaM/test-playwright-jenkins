@@ -32,7 +32,7 @@ pipeline {
         stage('Instalar Dependencias') {
             steps {
                 echo 'Instalando dependencias npm...'
-                sh 'test-playwright-jenkins'
+                sh 'ls'
                 sh 'npm i'
                 sh 'npx playwright install'
             }
